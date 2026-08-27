@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import '../models/product_data.dart';
+import '../models/product.dart';
+import 'product_list_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Home ekranında öne çıkaracağımız ilk ürünler.
+    final featuredProducts = products.take(4).toList();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF7F4EE),
 
@@ -24,16 +30,19 @@ class HomeScreen extends StatelessWidget {
             selectedIcon: Icon(Icons.home),
             label: 'Ana Sayfa',
           ),
+
           NavigationDestination(
             icon: Icon(Icons.grid_view_outlined),
             selectedIcon: Icon(Icons.grid_view),
             label: 'Kategoriler',
           ),
+
           NavigationDestination(
             icon: Icon(Icons.shopping_bag_outlined),
             selectedIcon: Icon(Icons.shopping_bag),
             label: 'Sepet',
           ),
+
           NavigationDestination(
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person),
@@ -66,11 +75,13 @@ class HomeScreen extends StatelessWidget {
               // ─────────────────────────────
 
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment:
+                    MainAxisAlignment.spaceBetween,
 
                 children: [
                   const Text(
                     'Icy',
+
                     style: TextStyle(
                       color: Color(0xFF66564E),
                       fontSize: 26,
@@ -84,6 +95,7 @@ class HomeScreen extends StatelessWidget {
                     children: [
                       IconButton(
                         onPressed: () {},
+
                         icon: const Icon(
                           Icons.notifications_none,
                           color: Color(0xFF66564E),
@@ -93,6 +105,7 @@ class HomeScreen extends StatelessWidget {
 
                       IconButton(
                         onPressed: () {},
+
                         icon: const Icon(
                           Icons.shopping_bag_outlined,
                           color: Color(0xFF66564E),
@@ -108,6 +121,7 @@ class HomeScreen extends StatelessWidget {
 
               const Text(
                 'POUR TOİ',
+
                 style: TextStyle(
                   color: Color(0xFF8B827B),
                   fontSize: 12,
@@ -126,7 +140,8 @@ class HomeScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFFFBF9F5),
 
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius:
+                      BorderRadius.circular(14),
 
                   border: Border.all(
                     color: const Color(0xFFE5DED4),
@@ -150,7 +165,8 @@ class HomeScreen extends StatelessWidget {
                       size: 20,
                     ),
 
-                    contentPadding: EdgeInsets.symmetric(
+                    contentPadding:
+                        EdgeInsets.symmetric(
                       vertical: 14,
                     ),
                   ),
@@ -170,6 +186,7 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   const Text(
                     'Kategoriler',
+
                     style: TextStyle(
                       color: Color(0xFF383431),
                       fontSize: 18,
@@ -178,9 +195,21 @@ class HomeScreen extends StatelessWidget {
                   ),
 
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const ProductListScreen(
+                            initialCategory: 'Tümü',
+                          ),
+                        ),
+                      );
+                    },
+
                     child: const Text(
                       'Tümü',
+
                       style: TextStyle(
                         color: Color(0xFFA9826E),
                         fontSize: 11,
@@ -192,42 +221,85 @@ class HomeScreen extends StatelessWidget {
 
               const SizedBox(height: 8),
 
+              // ─────────────────────────────
+              // KATEGORİ LİSTESİ
+              // ─────────────────────────────
+
               SizedBox(
-                height: 92,
+                height: 100,
 
                 child: ListView(
                   scrollDirection: Axis.horizontal,
 
                   children: [
+                    // KUPA
                     _categoryItem(
-                      icon: Icons.local_cafe_outlined,
+                      context: context,
+                      imagePath:
+                          'assets/categories/kupa.png',
                       title: 'Kupa',
                     ),
 
+                    // TABAK
                     _categoryItem(
-                      icon: Icons.auto_awesome,
-                      title: 'Takı',
-                    ),
-
-                    _categoryItem(
-                      icon: Icons.circle_outlined,
+                      context: context,
+                      imagePath:
+                          'assets/categories/tabak.png',
                       title: 'Tabak',
                     ),
 
+                    // ANAHTARLIK
                     _categoryItem(
-                      icon: Icons.bookmark_border,
-                      title: 'Ayraç',
+                      context: context,
+                      imagePath:
+                          'assets/categories/anahtarlik.png',
+                      title: 'Anahtarlık',
                     ),
 
+                    // KASE
                     _categoryItem(
-                      icon: Icons.photo_outlined,
+                      context: context,
+                      imagePath:
+                          'assets/categories/kase.png',
+                      title: 'Kase',
+                    ),
+
+                    // BİBLO
+                    _categoryItem(
+                      context: context,
+                      imagePath:
+                          'assets/categories/biblo.png',
+                      title: 'Biblo',
+                    ),
+
+                    // TABLO
+                    _categoryItem(
+                      context: context,
+                      imagePath:
+                          'assets/categories/tablo.png',
                       title: 'Tablo',
+                    ),
+
+                    // KİTAP AYRACI
+                    _categoryItem(
+                      context: context,
+                      imagePath:
+                          'assets/categories/kitap_ayraci.png',
+                      title: 'Kitap Ayracı',
+                    ),
+
+                    // VAZO
+                    _categoryItem(
+                      context: context,
+                      imagePath:
+                          'assets/categories/vazo.png',
+                      title: 'Vazo',
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 26),
+              const SizedBox(height: 28),
 
               // ─────────────────────────────
               // ÖNE ÇIKAN ÜRÜNLER
@@ -240,6 +312,7 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   const Text(
                     'Öne Çıkanlar',
+
                     style: TextStyle(
                       color: Color(0xFF383431),
                       fontSize: 18,
@@ -248,9 +321,21 @@ class HomeScreen extends StatelessWidget {
                   ),
 
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const ProductListScreen(
+                            initialCategory: 'Tümü',
+                          ),
+                        ),
+                      );
+                    },
+
                     child: const Text(
                       'Tümünü Gör',
+
                       style: TextStyle(
                         color: Color(0xFFA9826E),
                         fontSize: 11,
@@ -263,55 +348,41 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 10),
 
               // ─────────────────────────────
-              // ÜRÜN GRID
+              // GERÇEK ÜRÜNLER
               // ─────────────────────────────
 
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              GridView.builder(
+                shrinkWrap: true,
 
-                children: [
-                  Expanded(
-                    child: _productCard(
-                      imagePath: 'assets/tablo.png',
-                      title: 'Çiçekli Seramik Tablo',
-                      price: '₺890',
-                    ),
-                  ),
+                physics:
+                    const NeverScrollableScrollPhysics(),
 
-                  const SizedBox(width: 12),
+                itemCount:
+                    featuredProducts.length,
 
-                  Expanded(
-                    child: _productPlaceholderCard(
-                      title: 'Yakında',
-                      subtitle: 'Yeni ürün',
-                    ),
-                  ),
-                ],
-              ),
+                gridDelegate:
+                    const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
 
-              const SizedBox(height: 16),
+                  crossAxisSpacing: 12,
 
-              // İkinci satır
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSpacing: 16,
 
-                children: [
-                  Expanded(
-                    child: _productPlaceholderCard(
-                      title: 'Yakında',
-                      subtitle: 'Yeni koleksiyon',
-                    ),
-                  ),
+                  childAspectRatio: 0.70,
+                ),
 
-                  const SizedBox(width: 12),
+                itemBuilder: (
+                  context,
+                  index,
+                ) {
+                  final product =
+                      featuredProducts[index];
 
-                  Expanded(
-                    child: _productPlaceholderCard(
-                      title: 'Yakında',
-                      subtitle: 'El emeği ürün',
-                    ),
-                  ),
-                ],
+                  return _productCard(
+                    context: context,
+                    product: product,
+                  );
+                },
               ),
             ],
           ),
@@ -325,47 +396,92 @@ class HomeScreen extends StatelessWidget {
   // ─────────────────────────────────────────
 
   Widget _categoryItem({
-    required IconData icon,
+    required BuildContext context,
+    required String imagePath,
     required String title,
   }) {
-    return Container(
-      width: 72,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                ProductListScreen(
+              initialCategory: title,
+            ),
+          ),
+        );
+      },
 
-      margin: const EdgeInsets.only(right: 12),
+      child: Container(
+        width: 78,
 
-      child: Column(
-        children: [
-          Container(
-            width: 58,
-            height: 58,
+        margin: const EdgeInsets.only(
+          right: 12,
+        ),
 
-            decoration: BoxDecoration(
-              color: const Color(0xFFFBF9F5),
+        child: Column(
+          children: [
+            Container(
+              width: 62,
+              height: 62,
 
-              shape: BoxShape.circle,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFBF9F5),
 
-              border: Border.all(
-                color: const Color(0xFFE5DED4),
+                shape: BoxShape.circle,
+
+                border: Border.all(
+                  color: const Color(0xFFE5DED4),
+                ),
+              ),
+
+              child: ClipOval(
+                child: Image.asset(
+                  imagePath,
+
+                  fit: BoxFit.cover,
+
+                  errorBuilder: (
+                    context,
+                    error,
+                    stackTrace,
+                  ) {
+                    return const Icon(
+                      Icons
+                          .image_not_supported_outlined,
+
+                      color:
+                          Color(0xFFB0A69E),
+
+                      size: 22,
+                    );
+                  },
+                ),
               ),
             ),
 
-            child: Icon(
-              icon,
-              color: const Color(0xFF796C64),
-              size: 23,
-            ),
-          ),
+            const SizedBox(height: 7),
 
-          const SizedBox(height: 7),
+            Text(
+              title,
 
-          Text(
-            title,
-            style: const TextStyle(
-              color: Color(0xFF66564E),
-              fontSize: 10,
+              maxLines: 2,
+
+              overflow:
+                  TextOverflow.ellipsis,
+
+              textAlign:
+                  TextAlign.center,
+
+              style: const TextStyle(
+                color: Color(0xFF66564E),
+
+                fontSize: 10,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -375,133 +491,139 @@ class HomeScreen extends StatelessWidget {
   // ─────────────────────────────────────────
 
   Widget _productCard({
-    required String imagePath,
-    required String title,
-    required String price,
+    required BuildContext context,
+    required Product product,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFFBF9F5),
+    return GestureDetector(
+      onTap: () {
+        // Ürün detay ekranını
+        // birazdan bağlayacağız.
+      },
 
-        borderRadius: BorderRadius.circular(16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFFBF9F5),
 
-        border: Border.all(
-          color: const Color(0xFFE5DED4),
-        ),
-      ),
+          borderRadius:
+              BorderRadius.circular(16),
 
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(16),
-            ),
-
-            child: AspectRatio(
-              aspectRatio: 1,
-
-              child: Image.asset(
-                imagePath,
-                fit: BoxFit.cover,
-              ),
-            ),
+          border: Border.all(
+            color: const Color(0xFFE5DED4),
           ),
-
-          Padding(
-            padding: const EdgeInsets.all(12),
-
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-
-              children: [
-                Text(
-                  title,
-
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-
-                  style: const TextStyle(
-                    color: Color(0xFF66564E),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-
-                const SizedBox(height: 7),
-
-                Text(
-                  price,
-
-                  style: const TextStyle(
-                    color: Color(0xFFA9826E),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ─────────────────────────────────────────
-  // GEÇİCİ ÜRÜN KARTI
-  // ─────────────────────────────────────────
-
-  Widget _productPlaceholderCard({
-    required String title,
-    required String subtitle,
-  }) {
-    return Container(
-      height: 210,
-
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1ECE4),
-
-        borderRadius: BorderRadius.circular(16),
-
-        border: Border.all(
-          color: const Color(0xFFE5DED4),
         ),
-      ),
 
-      child: Center(
         child: Column(
-          mainAxisAlignment:
-              MainAxisAlignment.center,
+          crossAxisAlignment:
+              CrossAxisAlignment.start,
 
           children: [
-            const Icon(
-              Icons.spa_outlined,
-              color: Color(0xFFC9A995),
-              size: 28,
-            ),
+            // ─────────────────────────
+            // ÜRÜN GÖRSELİ
+            // ─────────────────────────
 
-            const SizedBox(height: 10),
+            Expanded(
+              child: ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
 
-            Text(
-              title,
+                child: SizedBox(
+                  width: double.infinity,
 
-              style: const TextStyle(
-                color: Color(0xFF66564E),
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
+                  child: Image.asset(
+                    product.image,
+
+                    fit: BoxFit.cover,
+
+                    errorBuilder: (
+                      context,
+                      error,
+                      stackTrace,
+                    ) {
+                      return Container(
+                        color:
+                            const Color(0xFFF1ECE4),
+
+                        child: const Center(
+                          child: Icon(
+                            Icons
+                                .image_not_supported_outlined,
+
+                            color:
+                                Color(0xFFB0A69E),
+
+                            size: 30,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
 
-            const SizedBox(height: 4),
+            // ─────────────────────────
+            // ÜRÜN BİLGİLERİ
+            // ─────────────────────────
 
-            Text(
-              subtitle,
+            Padding(
+              padding:
+                  const EdgeInsets.all(12),
 
-              style: const TextStyle(
-                color: Color(0xFF9B9189),
-                fontSize: 10,
+              child: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+
+                children: [
+                  Text(
+                    product.name,
+
+                    maxLines: 2,
+
+                    overflow:
+                        TextOverflow.ellipsis,
+
+                    style: const TextStyle(
+                      color:
+                          Color(0xFF66564E),
+
+                      fontSize: 12,
+
+                      fontWeight:
+                          FontWeight.w500,
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  Text(
+                    product.category,
+
+                    style: const TextStyle(
+                      color:
+                          Color(0xFF9B9189),
+
+                      fontSize: 9,
+                    ),
+                  ),
+
+                  const SizedBox(height: 7),
+
+                  Text(
+                    '₺${product.price.toStringAsFixed(0)}',
+
+                    style: const TextStyle(
+                      color:
+                          Color(0xFFA9826E),
+
+                      fontSize: 13,
+
+                      fontWeight:
+                          FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
