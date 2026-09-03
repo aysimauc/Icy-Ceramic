@@ -122,7 +122,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 const SizedBox(height: 28),
 
-                // Ad Soyad
                 TextFormField(
                   decoration: _inputDecoration(
                     hintText: 'Adınız Soyadınız',
@@ -164,7 +163,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 const SizedBox(height: 12),
 
-                // Şifre
                 TextFormField(
                   controller: _passwordController,
 
@@ -204,7 +202,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 const SizedBox(height: 12),
 
-                // Şifre Tekrar
                 TextFormField(
                   controller: _confirmPasswordController,
 
@@ -316,8 +313,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // Input tasarımını tek yerde tutuyoruz.
-  // Böylece dört TextField için aynı kodu tekrar tekrar yazmıyoruz.
   InputDecoration _inputDecoration({
     required String hintText,
     required IconData icon,

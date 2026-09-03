@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/product_data.dart';
 import '../models/product.dart';
+import 'product_detail_screen.dart';
 
 class ProductListScreen extends StatefulWidget {
   final String initialCategory;
@@ -11,16 +12,14 @@ class ProductListScreen extends StatefulWidget {
   });
 
   @override
-  State<ProductListScreen> createState() => _ProductListScreenState();
+  State<ProductListScreen> createState() =>
+      _ProductListScreenState();
 }
 
-class _ProductListScreenState extends State<ProductListScreen> {
+class _ProductListScreenState
+    extends State<ProductListScreen> {
   late String selectedCategory;
   String searchText = '';
-
-  // ============================================================
-  // KATEGORİLER
-  // ============================================================
 
   final List<String> categories = [
     'Tümü',
@@ -34,22 +33,15 @@ class _ProductListScreenState extends State<ProductListScreen> {
     'Vazo',
   ];
 
-  // ============================================================
-  // BAŞLANGIÇ
-  // ============================================================
-
   @override
   void initState() {
     super.initState();
 
-    selectedCategory = categories.contains(widget.initialCategory)
-        ? widget.initialCategory
-        : 'Tümü';
+    selectedCategory =
+        categories.contains(widget.initialCategory)
+            ? widget.initialCategory
+            : 'Tümü';
   }
-
-  // ============================================================
-  // FİLTRELENMİŞ ÜRÜNLER
-  // ============================================================
 
   List<Product> get filteredProducts {
     return products.where((product) {
@@ -65,21 +57,27 @@ class _ProductListScreenState extends State<ProductListScreen> {
     }).toList();
   }
 
-  // ============================================================
-  // BUILD
-  // ============================================================
+  void openProductDetail(Product product) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            ProductDetailScreen(
+          product: product,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F4EE),
-
-      // ========================================================
-      // APP BAR
-      // ========================================================
+      backgroundColor:
+          const Color(0xFFF7F4EE),
 
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF7F4EE),
+        backgroundColor:
+            const Color(0xFFF7F4EE),
         elevation: 0,
         centerTitle: true,
 
@@ -106,20 +104,16 @@ class _ProductListScreenState extends State<ProductListScreen> {
         ),
       ),
 
-      // ========================================================
-      // BODY
-      // ========================================================
-
       body: SafeArea(
         child: Column(
           children: [
-
             // ==================================================
             // ARAMA
             // ==================================================
 
             Padding(
-              padding: const EdgeInsets.fromLTRB(
+              padding:
+                  const EdgeInsets.fromLTRB(
                 20,
                 8,
                 20,
@@ -127,35 +121,35 @@ class _ProductListScreenState extends State<ProductListScreen> {
               ),
               child: Container(
                 height: 46,
-
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFBF9F5),
-                  borderRadius: BorderRadius.circular(13),
+                  color:
+                      const Color(0xFFFBF9F5),
+                  borderRadius:
+                      BorderRadius.circular(13),
                   border: Border.all(
-                    color: const Color(0xFFE5DED4),
+                    color:
+                        const Color(0xFFE5DED4),
                   ),
                 ),
-
                 child: TextField(
                   onChanged: (value) {
                     setState(() {
                       searchText = value;
                     });
                   },
-
-                  decoration: const InputDecoration(
+                  decoration:
+                      const InputDecoration(
                     border: InputBorder.none,
-
                     hintText: 'Ürün ara...',
-
                     hintStyle: TextStyle(
-                      color: Color(0xFFB0A69E),
+                      color:
+                          Color(0xFFB0A69E),
                       fontSize: 12,
                     ),
-
                     prefixIcon: Icon(
                       Icons.search,
-                      color: Color(0xFF796C64),
+                      color:
+                          Color(0xFF796C64),
                       size: 20,
                     ),
                   ),
@@ -169,71 +163,83 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
             SizedBox(
               height: 38,
-
               child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-
-                padding: const EdgeInsets.symmetric(
+                scrollDirection:
+                    Axis.horizontal,
+                padding:
+                    const EdgeInsets.symmetric(
                   horizontal: 20,
                 ),
-
-                itemCount: categories.length,
-
-                itemBuilder: (context, index) {
-                  final category = categories[index];
+                itemCount:
+                    categories.length,
+                itemBuilder:
+                    (context, index) {
+                  final category =
+                      categories[index];
 
                   final isSelected =
-                      selectedCategory == category;
+                      selectedCategory ==
+                          category;
 
                   return GestureDetector(
                     onTap: () {
                       setState(() {
-                        selectedCategory = category;
+                        selectedCategory =
+                            category;
                       });
                     },
-
                     child: AnimatedContainer(
-                      duration: const Duration(
+                      duration:
+                          const Duration(
                         milliseconds: 200,
                       ),
-
-                      margin: const EdgeInsets.only(
+                      margin:
+                          const EdgeInsets.only(
                         right: 8,
                       ),
-
-                      padding: const EdgeInsets.symmetric(
+                      padding:
+                          const EdgeInsets
+                              .symmetric(
                         horizontal: 16,
                       ),
-
-                      decoration: BoxDecoration(
+                      decoration:
+                          BoxDecoration(
                         color: isSelected
-                            ? const Color(0xFFC9A995)
-                            : const Color(0xFFFBF9F5),
-
+                            ? const Color(
+                                0xFFC9A995,
+                              )
+                            : const Color(
+                                0xFFFBF9F5,
+                              ),
                         borderRadius:
-                            BorderRadius.circular(20),
-
+                            BorderRadius
+                                .circular(20),
                         border: Border.all(
                           color: isSelected
-                              ? const Color(0xFFC9A995)
-                              : const Color(0xFFE5DED4),
+                              ? const Color(
+                                  0xFFC9A995,
+                                )
+                              : const Color(
+                                  0xFFE5DED4,
+                                ),
                         ),
                       ),
-
                       child: Center(
                         child: Text(
                           category,
-
                           style: TextStyle(
                             color: isSelected
                                 ? Colors.white
-                                : const Color(0xFF796C64),
-
+                                : const Color(
+                                    0xFF796C64,
+                                  ),
                             fontSize: 10,
-
-                            fontWeight: isSelected
-                                ? FontWeight.w500
-                                : FontWeight.w400,
+                            fontWeight:
+                                isSelected
+                                    ? FontWeight
+                                        .w500
+                                    : FontWeight
+                                        .w400,
                           ),
                         ),
                       ),
@@ -254,64 +260,71 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   ? Center(
                       child: Column(
                         mainAxisAlignment:
-                            MainAxisAlignment.center,
-
+                            MainAxisAlignment
+                                .center,
                         children: [
                           const Icon(
-                            Icons.inventory_2_outlined,
-                            color: Color(0xFFB0A69E),
+                            Icons
+                                .inventory_2_outlined,
+                            color:
+                                Color(0xFFB0A69E),
                             size: 42,
                           ),
 
-                          const SizedBox(height: 12),
+                          const SizedBox(
+                            height: 12,
+                          ),
 
                           Text(
-                            selectedCategory == 'Tümü'
+                            selectedCategory ==
+                                    'Tümü'
                                 ? 'Henüz ürün bulunamadı.'
                                 : '$selectedCategory kategorisinde ürün bulunamadı.',
-
-                            textAlign: TextAlign.center,
-
-                            style: const TextStyle(
-                              color: Color(0xFF8B827B),
+                            textAlign:
+                                TextAlign.center,
+                            style:
+                                const TextStyle(
+                              color:
+                                  Color(0xFF8B827B),
                               fontSize: 12,
                             ),
                           ),
                         ],
                       ),
                     )
-
                   : GridView.builder(
-                      padding: const EdgeInsets.fromLTRB(
+                      padding:
+                          const EdgeInsets
+                              .fromLTRB(
                         20,
                         0,
                         20,
                         24,
                       ),
-
                       physics:
                           const BouncingScrollPhysics(),
-
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
-
                         crossAxisSpacing: 12,
-
                         mainAxisSpacing: 16,
-
                         childAspectRatio: 0.68,
                       ),
-
                       itemCount:
                           filteredProducts.length,
-
-                      itemBuilder: (context, index) {
+                      itemBuilder:
+                          (context, index) {
                         final product =
-                            filteredProducts[index];
+                            filteredProducts[
+                                index];
 
                         return _ProductCard(
                           product: product,
+                          onTap: () {
+                            openProductDetail(
+                              product,
+                            );
+                          },
                         );
                       },
                     ),
@@ -329,26 +342,23 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
 class _ProductCard extends StatelessWidget {
   final Product product;
+  final VoidCallback onTap;
 
   const _ProductCard({
     required this.product,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        // Ürün detay ekranını
-        // daha sonra buraya bağlayacağız.
-      },
+      onTap: onTap,
 
       child: Container(
         decoration: BoxDecoration(
           color: const Color(0xFFFBF9F5),
-
           borderRadius:
               BorderRadius.circular(16),
-
           border: Border.all(
             color: const Color(0xFFE5DED4),
           ),
@@ -357,9 +367,7 @@ class _ProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment:
               CrossAxisAlignment.start,
-
           children: [
-
             // ==================================================
             // ÜRÜN GÖRSELİ
             // ==================================================
@@ -370,24 +378,21 @@ class _ProductCard extends StatelessWidget {
                     const BorderRadius.vertical(
                   top: Radius.circular(16),
                 ),
-
                 child: Image.asset(
                   product.image,
-
                   width: double.infinity,
-
                   fit: BoxFit.cover,
-
-                  // Görsel bulunamazsa uygulama çökmeyecek.
                   errorBuilder:
                       (context, error, stackTrace) {
                     return Container(
-                      color: const Color(0xFFF1ECE4),
-
+                      color:
+                          const Color(0xFFF1ECE4),
                       child: const Center(
                         child: Icon(
-                          Icons.image_not_supported_outlined,
-                          color: Color(0xFFB0A69E),
+                          Icons
+                              .image_not_supported_outlined,
+                          color:
+                              Color(0xFFB0A69E),
                           size: 30,
                         ),
                       ),
@@ -402,25 +407,20 @@ class _ProductCard extends StatelessWidget {
             // ==================================================
 
             Padding(
-              padding: const EdgeInsets.all(11),
-
+              padding:
+                  const EdgeInsets.all(11),
               child: Column(
                 crossAxisAlignment:
                     CrossAxisAlignment.start,
-
                 children: [
-
-                  // ÜRÜN ADI
                   Text(
                     product.name,
-
                     maxLines: 2,
-
                     overflow:
                         TextOverflow.ellipsis,
-
                     style: const TextStyle(
-                      color: Color(0xFF66564E),
+                      color:
+                          Color(0xFF66564E),
                       fontSize: 12,
                       fontWeight:
                           FontWeight.w500,
@@ -429,24 +429,22 @@ class _ProductCard extends StatelessWidget {
 
                   const SizedBox(height: 6),
 
-                  // KATEGORİ
                   Text(
                     product.category,
-
                     style: const TextStyle(
-                      color: Color(0xFF9B9189),
+                      color:
+                          Color(0xFF9B9189),
                       fontSize: 9,
                     ),
                   ),
 
                   const SizedBox(height: 6),
 
-                  // FİYAT
                   Text(
                     '₺${product.price.toStringAsFixed(0)}',
-
                     style: const TextStyle(
-                      color: Color(0xFFA9826E),
+                      color:
+                          Color(0xFFA9826E),
                       fontSize: 13,
                       fontWeight:
                           FontWeight.w600,
