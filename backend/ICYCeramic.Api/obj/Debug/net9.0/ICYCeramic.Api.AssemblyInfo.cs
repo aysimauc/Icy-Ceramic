@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ICYCeramic.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+897f7271025c3c087062b751727e71430db218da")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0dd49271516608ab4c9876a6946f7ead14ad3239")]
 [assembly: System.Reflection.AssemblyProductAttribute("ICYCeramic.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ICYCeramic.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

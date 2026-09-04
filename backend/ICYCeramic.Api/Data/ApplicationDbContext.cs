@@ -15,6 +15,8 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<Product> Products { get; set; }
 
+    public DbSet<User> Users { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -60,6 +62,31 @@ public class ApplicationDbContext : DbContext
                 .WithMany(category => category.Products)
                 .HasForeignKey(product => product.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.ToTable("Users");
+
+            entity.HasKey(user => user.Id);
+
+            entity.Property(user => user.Name)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(user => user.Email)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            entity.HasIndex(user => user.Email)
+                .IsUnique();
+
+            entity.Property(user => user.PasswordHash)
+                .IsRequired()
+                .HasMaxLength(500);
+
+            entity.Property(user => user.CreatedAt)
+                .IsRequired();
         });
     }
 }
