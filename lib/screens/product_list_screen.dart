@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../models/product_data.dart';
+
 import '../models/product.dart';
+import '../services/product_api_service.dart';
 import 'product_detail_screen.dart';
 
 class ProductListScreen extends StatefulWidget {
@@ -19,7 +20,14 @@ class ProductListScreen extends StatefulWidget {
 class _ProductListScreenState
     extends State<ProductListScreen> {
   late String selectedCategory;
+
   String searchText = '';
+
+  List<Product> products = [];
+
+  bool isLoading = true;
+
+  String? errorMessage;
 
   final List<String> categories = [
     'Tümü',
@@ -41,7 +49,48 @@ class _ProductListScreenState
         categories.contains(widget.initialCategory)
             ? widget.initialCategory
             : 'Tümü';
+
+    _loadProducts();
   }
+
+  // ============================================================
+  // API'DEN ÜRÜNLERİ GETİR
+  // ============================================================
+
+  Future<void> _loadProducts() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
+    try {
+      final loadedProducts =
+          await ProductApiService.getProducts();
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        products = loadedProducts;
+        isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        isLoading = false;
+        errorMessage =
+            'Ürünler yüklenirken bir sorun oluştu.';
+      });
+    }
+  }
+
+  // ============================================================
+  // FİLTRELENMİŞ ÜRÜNLER
+  // ============================================================
 
   List<Product> get filteredProducts {
     return products.where((product) {
@@ -57,6 +106,10 @@ class _ProductListScreenState
     }).toList();
   }
 
+  // ============================================================
+  // ÜRÜN DETAYI
+  // ============================================================
+
   void openProductDetail(Product product) {
     Navigator.push(
       context,
@@ -68,6 +121,10 @@ class _ProductListScreenState
       ),
     );
   }
+
+  // ============================================================
+  // BUILD
+  // ============================================================
 
   @override
   Widget build(BuildContext context) {
@@ -256,82 +313,156 @@ class _ProductListScreenState
             // ==================================================
 
             Expanded(
-              child: filteredProducts.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment:
-                            MainAxisAlignment
-                                .center,
-                        children: [
-                          const Icon(
-                            Icons
-                                .inventory_2_outlined,
-                            color:
-                                Color(0xFFB0A69E),
-                            size: 42,
-                          ),
-
-                          const SizedBox(
-                            height: 12,
-                          ),
-
-                          Text(
-                            selectedCategory ==
-                                    'Tümü'
-                                ? 'Henüz ürün bulunamadı.'
-                                : '$selectedCategory kategorisinde ürün bulunamadı.',
-                            textAlign:
-                                TextAlign.center,
-                            style:
-                                const TextStyle(
-                              color:
-                                  Color(0xFF8B827B),
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : GridView.builder(
-                      padding:
-                          const EdgeInsets
-                              .fromLTRB(
-                        20,
-                        0,
-                        20,
-                        24,
-                      ),
-                      physics:
-                          const BouncingScrollPhysics(),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: 0.68,
-                      ),
-                      itemCount:
-                          filteredProducts.length,
-                      itemBuilder:
-                          (context, index) {
-                        final product =
-                            filteredProducts[
-                                index];
-
-                        return _ProductCard(
-                          product: product,
-                          onTap: () {
-                            openProductDetail(
-                              product,
-                            );
-                          },
-                        );
-                      },
-                    ),
+              child: _buildProductArea(),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  // ============================================================
+  // ÜRÜN ALANI
+  // ============================================================
+
+  Widget _buildProductArea() {
+    // ----------------------------------------------------------
+    // YÜKLENİYOR
+    // ----------------------------------------------------------
+
+    if (isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: Color(0xFFC9A995),
+          strokeWidth: 2,
+        ),
+      );
+    }
+
+    // ----------------------------------------------------------
+    // HATA
+    // ----------------------------------------------------------
+
+    if (errorMessage != null) {
+      return Center(
+        child: Padding(
+          padding:
+              const EdgeInsets.symmetric(
+            horizontal: 30,
+          ),
+          child: Column(
+            mainAxisAlignment:
+                MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.cloud_off_outlined,
+                color: Color(0xFFB0A69E),
+                size: 42,
+              ),
+
+              const SizedBox(height: 12),
+
+              Text(
+                errorMessage!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Color(0xFF8B827B),
+                  fontSize: 12,
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              OutlinedButton(
+                onPressed: _loadProducts,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor:
+                      const Color(0xFF66564E),
+                  side: const BorderSide(
+                    color: Color(0xFFC9A995),
+                  ),
+                ),
+                child: const Text(
+                  'Tekrar Dene',
+                  style: TextStyle(
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // ----------------------------------------------------------
+    // ÜRÜN YOK
+    // ----------------------------------------------------------
+
+    if (filteredProducts.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment:
+              MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.inventory_2_outlined,
+              color: Color(0xFFB0A69E),
+              size: 42,
+            ),
+
+            const SizedBox(height: 12),
+
+            Text(
+              selectedCategory == 'Tümü'
+                  ? 'Henüz ürün bulunamadı.'
+                  : '$selectedCategory kategorisinde ürün bulunamadı.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0xFF8B827B),
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // ----------------------------------------------------------
+    // ÜRÜN GRID
+    // ----------------------------------------------------------
+
+    return GridView.builder(
+      padding:
+          const EdgeInsets.fromLTRB(
+        20,
+        0,
+        20,
+        24,
+      ),
+      physics:
+          const BouncingScrollPhysics(),
+      gridDelegate:
+          const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 16,
+        childAspectRatio: 0.68,
+      ),
+      itemCount:
+          filteredProducts.length,
+      itemBuilder:
+          (context, index) {
+        final product =
+            filteredProducts[index];
+
+        return _ProductCard(
+          product: product,
+          onTap: () {
+            openProductDetail(product);
+          },
+        );
+      },
     );
   }
 }
