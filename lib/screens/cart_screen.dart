@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+
+import '../models/product.dart';
+import '../services/auth_session_service.dart';
 import '../services/cart_service.dart';
 import '../services/coupon_service.dart';
-import '../models/product.dart';
 import 'checkout_screen.dart';
 
 class CartScreen extends StatefulWidget {
@@ -14,20 +16,24 @@ class CartScreen extends StatefulWidget {
       _CartScreenState();
 }
 
-class _CartScreenState
-    extends State<CartScreen> {
-  final TextEditingController
-      couponController =
+class _CartScreenState extends State<CartScreen> {
+  final TextEditingController couponController =
       TextEditingController();
 
   String? couponMessage;
   bool couponError = false;
+
+  bool _isUpdatingCart = false;
 
   @override
   void dispose() {
     couponController.dispose();
     super.dispose();
   }
+
+  // ============================================================
+  // COUPON
+  // ============================================================
 
   void applyCoupon() {
     final code =
@@ -70,9 +76,66 @@ class _CartScreenState
     });
   }
 
+  // ============================================================
+  // REFRESH
+  // ============================================================
+
   void refresh() {
+    if (!mounted) {
+      return;
+    }
+
     setState(() {});
   }
+
+  // ============================================================
+  // ERROR MESSAGE
+  // ============================================================
+
+  void showCartError(
+    Object error,
+  ) {
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context)
+        .hideCurrentSnackBar();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          error
+              .toString()
+              .replaceFirst(
+                'Exception: ',
+                '',
+              ),
+        ),
+        backgroundColor:
+            const Color(0xFF9A6F62),
+        behavior:
+            SnackBarBehavior.floating,
+        shape:
+            RoundedRectangleBorder(
+          borderRadius:
+              BorderRadius.circular(12),
+        ),
+      ),
+    );
+  }
+
+  // ============================================================
+  // USER ID
+  // ============================================================
+
+  int? get currentUserId {
+    return AuthSessionService.userId;
+  }
+
+  // ============================================================
+  // CHECKOUT
+  // ============================================================
 
   void openCheckout() {
     if (CartService.items.isEmpty) {
@@ -86,13 +149,165 @@ class _CartScreenState
             const CheckoutScreen(),
       ),
     ).then((_) {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     });
   }
 
+  // ============================================================
+  // INCREASE CART ITEM
+  // ============================================================
+
+  Future<void> increaseProduct(
+    Product product,
+  ) async {
+    if (_isUpdatingCart) {
+      return;
+    }
+
+    final userId =
+        currentUserId;
+
+    if (userId == null) {
+      showCartError(
+        'Oturum bilgisi bulunamadı.',
+      );
+      return;
+    }
+
+    final quantity =
+        CartService.quantity(product);
+
+    if (quantity >= product.stock) {
+      showCartError(
+        'Bu ürün için mevcut stok miktarına ulaştın.',
+      );
+      return;
+    }
+
+    setState(() {
+      _isUpdatingCart = true;
+    });
+
+    try {
+      await CartService.increase(
+        product,
+        userId: userId,
+      );
+
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (error) {
+      showCartError(error);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUpdatingCart = false;
+        });
+      }
+    }
+  }
+
+  // ============================================================
+  // DECREASE CART ITEM
+  // ============================================================
+
+  Future<void> decreaseProduct(
+    Product product,
+  ) async {
+    if (_isUpdatingCart) {
+      return;
+    }
+
+    final userId =
+        currentUserId;
+
+    if (userId == null) {
+      showCartError(
+        'Oturum bilgisi bulunamadı.',
+      );
+      return;
+    }
+
+    setState(() {
+      _isUpdatingCart = true;
+    });
+
+    try {
+      await CartService.decrease(
+        product,
+        userId: userId,
+      );
+
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (error) {
+      showCartError(error);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUpdatingCart = false;
+        });
+      }
+    }
+  }
+
+  // ============================================================
+  // REMOVE CART ITEM
+  // ============================================================
+
+  Future<void> removeProduct(
+    Product product,
+  ) async {
+    if (_isUpdatingCart) {
+      return;
+    }
+
+    final userId =
+        currentUserId;
+
+    if (userId == null) {
+      showCartError(
+        'Oturum bilgisi bulunamadı.',
+      );
+      return;
+    }
+
+    setState(() {
+      _isUpdatingCart = true;
+    });
+
+    try {
+      await CartService.remove(
+        product,
+        userId: userId,
+      );
+
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (error) {
+      showCartError(error);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUpdatingCart = false;
+        });
+      }
+    }
+  }
+
+  // ============================================================
+  // BUILD
+  // ============================================================
+
   @override
   Widget build(BuildContext context) {
-    final items = CartService.items;
+    final items =
+        CartService.items;
 
     final subtotal =
         CartService.totalPrice;
@@ -110,13 +325,11 @@ class _CartScreenState
     return Scaffold(
       backgroundColor:
           const Color(0xFFF7F4EE),
-
       appBar: AppBar(
         backgroundColor:
             const Color(0xFFF7F4EE),
         elevation: 0,
         centerTitle: true,
-
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
@@ -128,7 +341,6 @@ class _CartScreenState
             size: 19,
           ),
         ),
-
         title: const Text(
           'Sepetim',
           style: TextStyle(
@@ -140,7 +352,6 @@ class _CartScreenState
           ),
         ),
       ),
-
       body: items.isEmpty
           ? _emptyCart()
           : Column(
@@ -156,35 +367,37 @@ class _CartScreenState
                     ),
                     physics:
                         const BouncingScrollPhysics(),
-
                     children: [
                       ...items.map(
                         (product) =>
                             _cartItem(product),
                       ),
-
                       const SizedBox(
                         height: 10,
                       ),
-
                       _couponSection(),
-
                       const SizedBox(
                         height: 20,
                       ),
                     ],
                   ),
                 ),
-
                 _bottomSummary(
-                  subtotal: subtotal,
-                  discount: discount,
-                  finalTotal: finalTotal,
+                  subtotal:
+                      subtotal,
+                  discount:
+                      discount,
+                  finalTotal:
+                      finalTotal,
                 ),
               ],
             ),
     );
   }
+
+  // ============================================================
+  // EMPTY CART
+  // ============================================================
 
   Widget _emptyCart() {
     return Center(
@@ -215,11 +428,9 @@ class _CartScreenState
                 size: 34,
               ),
             ),
-
             const SizedBox(
               height: 20,
             ),
-
             const Text(
               'Sepetin henüz boş',
               style: TextStyle(
@@ -230,11 +441,9 @@ class _CartScreenState
                     FontWeight.w500,
               ),
             ),
-
             const SizedBox(
               height: 8,
             ),
-
             const Text(
               'Beğendiğin ürünleri sepete ekleyerek\nalışverişine devam edebilirsin.',
               textAlign:
@@ -246,11 +455,9 @@ class _CartScreenState
                 height: 1.5,
               ),
             ),
-
             const SizedBox(
               height: 24,
             ),
-
             SizedBox(
               height: 46,
               child: ElevatedButton(
@@ -292,7 +499,13 @@ class _CartScreenState
     );
   }
 
-  Widget _cartItem(Product product) {
+  // ============================================================
+  // CART ITEM
+  // ============================================================
+
+  Widget _cartItem(
+    Product product,
+  ) {
     final quantity =
         CartService.quantity(product);
 
@@ -352,11 +565,9 @@ class _CartScreenState
               },
             ),
           ),
-
           const SizedBox(
             width: 12,
           ),
-
           Expanded(
             child: Column(
               crossAxisAlignment:
@@ -376,11 +587,9 @@ class _CartScreenState
                         FontWeight.w500,
                   ),
                 ),
-
                 const SizedBox(
                   height: 5,
                 ),
-
                 Text(
                   product.category,
                   style:
@@ -390,11 +599,9 @@ class _CartScreenState
                     fontSize: 9,
                   ),
                 ),
-
                 const SizedBox(
                   height: 7,
                 ),
-
                 Text(
                   '₺${product.price.toStringAsFixed(0)}',
                   style:
@@ -406,25 +613,23 @@ class _CartScreenState
                         FontWeight.w600,
                   ),
                 ),
-
                 const SizedBox(
                   height: 8,
                 ),
-
                 Row(
                   children: [
                     _quantityButton(
                       icon:
                           Icons.remove,
-                      onPressed: () {
-                        CartService
-                            .decrease(
-                          product,
-                        );
-                        refresh();
-                      },
+                      onPressed:
+                          _isUpdatingCart
+                              ? () {}
+                              : () {
+                                  decreaseProduct(
+                                    product,
+                                  );
+                                },
                     ),
-
                     Padding(
                       padding:
                           const EdgeInsets
@@ -446,33 +651,32 @@ class _CartScreenState
                         ),
                       ),
                     ),
-
                     _quantityButton(
-                      icon: Icons.add,
-                      onPressed: () {
-                        if (quantity <
-                            product.stock) {
-                          CartService
-                              .increase(
-                            product,
-                          );
-                          refresh();
-                        }
-                      },
+                      icon:
+                          Icons.add,
+                      onPressed:
+                          _isUpdatingCart
+                              ? () {}
+                              : () {
+                                  increaseProduct(
+                                    product,
+                                  );
+                                },
                     ),
                   ],
                 ),
               ],
             ),
           ),
-
           IconButton(
-            onPressed: () {
-              CartService.remove(
-                product,
-              );
-              refresh();
-            },
+            onPressed:
+                _isUpdatingCart
+                    ? null
+                    : () {
+                        removeProduct(
+                          product,
+                        );
+                      },
             icon: const Icon(
               Icons.delete_outline,
               color:
@@ -484,6 +688,10 @@ class _CartScreenState
       ),
     );
   }
+
+  // ============================================================
+  // COUPON SECTION
+  // ============================================================
 
   Widget _couponSection() {
     final appliedCoupon =
@@ -533,11 +741,9 @@ class _CartScreenState
               ),
             ],
           ),
-
           const SizedBox(
             height: 12,
           ),
-
           if (appliedCoupon == null)
             Row(
               children: [
@@ -580,7 +786,8 @@ class _CartScreenState
                       decoration:
                           const InputDecoration(
                         border:
-                            InputBorder.none,
+                            InputBorder
+                                .none,
                         hintText:
                             'Kupon kodunu gir...',
                         hintStyle:
@@ -605,14 +812,13 @@ class _CartScreenState
                     ),
                   ),
                 ),
-
                 const SizedBox(
                   width: 8,
                 ),
-
                 SizedBox(
                   height: 44,
-                  child: ElevatedButton(
+                  child:
+                      ElevatedButton(
                     onPressed:
                         applyCoupon,
                     style:
@@ -639,7 +845,8 @@ class _CartScreenState
                         ),
                       ),
                     ),
-                    child: const Text(
+                    child:
+                        const Text(
                       'Uygula',
                       style:
                           TextStyle(
@@ -678,11 +885,9 @@ class _CartScreenState
                         Color(0xFFA9826E),
                     size: 18,
                   ),
-
                   const SizedBox(
                     width: 8,
                   ),
-
                   Expanded(
                     child: Text(
                       '$appliedCoupon kuponu uygulandı',
@@ -698,7 +903,6 @@ class _CartScreenState
                       ),
                     ),
                   ),
-
                   TextButton(
                     onPressed:
                         removeCoupon,
@@ -718,12 +922,10 @@ class _CartScreenState
                 ],
               ),
             ),
-
           if (couponMessage != null) ...[
             const SizedBox(
               height: 8,
             ),
-
             Row(
               children: [
                 Icon(
@@ -741,11 +943,9 @@ class _CartScreenState
                         ),
                   size: 14,
                 ),
-
                 const SizedBox(
                   width: 6,
                 ),
-
                 Expanded(
                   child: Text(
                     couponMessage!,
@@ -765,11 +965,9 @@ class _CartScreenState
               ],
             ),
           ],
-
           const SizedBox(
             height: 10,
           ),
-
           const Text(
             'Deneme kodları: ICY5 • ICY10 • ICY15',
             style: TextStyle(
@@ -782,6 +980,10 @@ class _CartScreenState
       ),
     );
   }
+
+  // ============================================================
+  // QUANTITY BUTTON
+  // ============================================================
 
   Widget _quantityButton({
     required IconData icon,
@@ -810,6 +1012,10 @@ class _CartScreenState
       ),
     );
   }
+
+  // ============================================================
+  // BOTTOM SUMMARY
+  // ============================================================
 
   Widget _bottomSummary({
     required double subtotal,
@@ -850,7 +1056,6 @@ class _CartScreenState
                   fontSize: 11,
                 ),
               ),
-
               Text(
                 '₺${subtotal.toStringAsFixed(0)}',
                 style:
@@ -862,12 +1067,10 @@ class _CartScreenState
               ),
             ],
           ),
-
           if (discount > 0) ...[
             const SizedBox(
               height: 6,
             ),
-
             Row(
               mainAxisAlignment:
                   MainAxisAlignment
@@ -875,13 +1078,13 @@ class _CartScreenState
               children: [
                 const Text(
                   'İndirim',
-                  style: TextStyle(
+                  style:
+                      TextStyle(
                     color:
                         Color(0xFFA9826E),
                     fontSize: 11,
                   ),
                 ),
-
                 Text(
                   '-₺${discount.toStringAsFixed(0)}',
                   style:
@@ -896,11 +1099,9 @@ class _CartScreenState
               ],
             ),
           ],
-
           const SizedBox(
             height: 8,
           ),
-
           Row(
             mainAxisAlignment:
                 MainAxisAlignment
@@ -916,7 +1117,6 @@ class _CartScreenState
                       FontWeight.w500,
                 ),
               ),
-
               Text(
                 '₺${finalTotal.toStringAsFixed(0)}',
                 style:
@@ -930,16 +1130,15 @@ class _CartScreenState
               ),
             ],
           ),
-
           const SizedBox(
             height: 14,
           ),
-
           SizedBox(
             width:
                 double.infinity,
             height: 52,
-            child: ElevatedButton(
+            child:
+                ElevatedButton(
               onPressed:
                   openCheckout,
               style:
@@ -959,7 +1158,8 @@ class _CartScreenState
                   ),
                 ),
               ),
-              child: const Text(
+              child:
+                  const Text(
                 'Alışverişi Tamamla',
                 style: TextStyle(
                   fontSize: 13,

@@ -4,6 +4,8 @@ import '../services/cart_service.dart';
 import '../services/coupon_service.dart';
 import '../services/order_service.dart';
 import '../services/address_service.dart';
+import '../services/auth_session_service.dart';
+import '../services/order_api_service.dart';
 import 'order_success_screen.dart';
 
 class CheckoutScreen extends StatefulWidget {
@@ -58,6 +60,7 @@ class _CheckoutScreenState
   String? selectedSavedAddress;
 
   bool saveAddress = false;
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -82,9 +85,29 @@ class _CheckoutScreenState
     });
   }
 
-  void completeOrder() {
+  Future<void> completeOrder() async {
+    if (_isSubmitting) {
+      return;
+    }
+
     if (!_formKey.currentState!
         .validate()) {
+      return;
+    }
+
+    final userId = AuthSessionService.userId;
+
+    if (userId == null) {
+      _showMessage(
+        'Oturum bilgisi bulunamadı. Lütfen tekrar giriş yapın.',
+      );
+      return;
+    }
+
+    if (CartService.items.isEmpty) {
+      _showMessage(
+        'Sepetinizde ürün bulunmuyor.',
+      );
       return;
     }
 
@@ -95,38 +118,109 @@ class _CheckoutScreenState
       AddressService.addAddress(address);
     }
 
-    final orderNumber =
-        'ICY-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}';
+    final subtotal = CartService.totalPrice;
 
     final total =
         CouponService.calculateFinalTotal(
-      CartService.totalPrice,
+      subtotal,
     );
 
-    final order = OrderRecord(
-      orderNumber: orderNumber,
-      total: total,
-      date: DateTime.now(),
-      paymentMethod: selectedPayment,
-      address: address,
-      status: 'Hazırlanıyor',
-    );
+    final quantities = <String, int>{};
 
-    OrderService.addOrder(order);
+    for (final product in CartService.items) {
+      quantities[product.id] =
+          CartService.quantity(product);
+    }
 
-    CartService.clear();
-    CouponService.removeCoupon();
+    setState(() {
+      _isSubmitting = true;
+    });
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) =>
-            OrderSuccessScreen(
-          orderNumber: orderNumber,
-          total: total,
+    try {
+      final result =
+          await OrderApiService.createOrder(
+        userId: userId,
+        paymentMethod: selectedPayment,
+        address: address,
+        total: total,
+        products: CartService.items,
+        quantities: quantities,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      final orderNumber =
+          result['orderNumber']?.toString() ??
+              'ICY-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}';
+
+      final serverTotal =
+          result['total'] is num
+              ? (result['total'] as num).toDouble()
+              : total;
+
+      final order = OrderRecord(
+        orderNumber: orderNumber,
+        total: serverTotal,
+        date: DateTime.now(),
+        paymentMethod: selectedPayment,
+        address: address,
+        status: result['status']?.toString() ??
+            'Hazırlanıyor',
+      );
+
+      OrderService.addOrder(order);
+
+      CartService.clear();
+      CouponService.removeCoupon();
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              OrderSuccessScreen(
+            orderNumber: orderNumber,
+            total: serverTotal,
+          ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
+
+      String message = e.toString();
+
+      if (message.startsWith('Exception: ')) {
+        message = message.substring(11);
+      }
+
+      _showMessage(message);
+
+      setState(() {
+        _isSubmitting = false;
+      });
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          backgroundColor: const Color(0xFF66564E),
+          content: Text(
+            message,
+            style: const TextStyle(
+              fontSize: 11,
+            ),
+          ),
+          duration: const Duration(
+            seconds: 3,
+          ),
+        ),
+      );
   }
 
   @override
@@ -890,7 +984,7 @@ class _CheckoutScreenState
               height: 54,
               child: ElevatedButton(
                 onPressed:
-                    completeOrder,
+                    _isSubmitting ? null : completeOrder,
                 style:
                     ElevatedButton.styleFrom(
                   backgroundColor:
@@ -899,6 +993,8 @@ class _CheckoutScreenState
                   ),
                   foregroundColor:
                       Colors.white,
+                  disabledBackgroundColor:
+                      const Color(0xFFD8C8BC),
                   elevation: 0,
                   shape:
                       RoundedRectangleBorder(
@@ -908,14 +1004,28 @@ class _CheckoutScreenState
                     ),
                   ),
                 ),
-                child: const Text(
-                  'Siparişi Tamamla',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight:
-                        FontWeight.w500,
-                  ),
-                ),
+                child: _isSubmitting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child:
+                          CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor:
+                            AlwaysStoppedAnimation<
+                                Color>(
+                          Colors.white,
+                        ),
+                      ),
+                    )
+                  : const Text(
+                      'Siparişi Tamamla',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight:
+                            FontWeight.w500,
+                      ),
+                    ),
               ),
             ),
 

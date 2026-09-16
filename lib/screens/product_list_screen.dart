@@ -92,11 +92,30 @@ class _ProductListScreenState
   // FİLTRELENMİŞ ÜRÜNLER
   // ============================================================
 
+  String _normalizeCategory(String value) {
+    return value
+        .trim()
+        .toLowerCase()
+        .replaceAll('ı', 'i')
+        .replaceAll('İ', 'i')
+        .replaceAll('ş', 's')
+        .replaceAll('Ş', 's')
+        .replaceAll('ğ', 'g')
+        .replaceAll('Ğ', 'g')
+        .replaceAll('ü', 'u')
+        .replaceAll('Ü', 'u')
+        .replaceAll('ö', 'o')
+        .replaceAll('Ö', 'o')
+        .replaceAll('ç', 'c')
+        .replaceAll('Ç', 'c');
+  }
+
   List<Product> get filteredProducts {
     return products.where((product) {
       final categoryMatches =
           selectedCategory == 'Tümü' ||
-          product.category == selectedCategory;
+          _normalizeCategory(product.category) ==
+              _normalizeCategory(selectedCategory);
 
       final searchMatches = product.name
           .toLowerCase()

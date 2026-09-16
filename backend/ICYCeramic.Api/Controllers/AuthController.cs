@@ -17,6 +17,10 @@ public class AuthController : ControllerBase
         _context = context;
     }
 
+    // ============================================================
+    // KAYIT OL
+    // ============================================================
+
     [HttpPost("register")]
     public async Task<IActionResult> Register(
         [FromBody] RegisterRequest request)
@@ -83,6 +87,69 @@ public class AuthController : ControllerBase
         return Ok(new
         {
             message = "Kayıt başarılı.",
+            userId = user.Id,
+            name = user.Name,
+            email = user.Email
+        });
+    }
+
+    // ============================================================
+    // GİRİŞ YAP
+    // ============================================================
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login(
+        [FromBody] LoginRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Email))
+        {
+            return BadRequest(new
+            {
+                message = "E-posta alanı zorunludur."
+            });
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Password))
+        {
+            return BadRequest(new
+            {
+                message = "Şifre alanı zorunludur."
+            });
+        }
+
+        string email = request.Email
+            .Trim()
+            .ToLowerInvariant();
+
+        var user = await _context.Users
+            .FirstOrDefaultAsync(
+                user => user.Email == email
+            );
+
+        if (user == null)
+        {
+            return Unauthorized(new
+            {
+                message = "E-posta veya şifre hatalı."
+            });
+        }
+
+        bool passwordCorrect = PasswordHasher.Verify(
+            request.Password,
+            user.PasswordHash
+        );
+
+        if (!passwordCorrect)
+        {
+            return Unauthorized(new
+            {
+                message = "E-posta veya şifre hatalı."
+            });
+        }
+
+        return Ok(new
+        {
+            message = "Giriş başarılı.",
             userId = user.Id,
             name = user.Name,
             email = user.Email
