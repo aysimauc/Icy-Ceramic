@@ -76,7 +76,13 @@ public class AuthController : ControllerBase
         {
             Name = request.Name.Trim(),
             Email = email,
-            PasswordHash = PasswordHasher.Hash(request.Password),
+            PasswordHash = PasswordHasher.Hash(
+                request.Password
+            ),
+
+            // Yeni kayıt olan herkes müşteri olarak başlar.
+            Role = "Customer",
+
             CreatedAt = DateTime.UtcNow
         };
 
@@ -89,7 +95,8 @@ public class AuthController : ControllerBase
             message = "Kayıt başarılı.",
             userId = user.Id,
             name = user.Name,
-            email = user.Email
+            email = user.Email,
+            role = user.Role
         });
     }
 
@@ -152,7 +159,8 @@ public class AuthController : ControllerBase
             message = "Giriş başarılı.",
             userId = user.Id,
             name = user.Name,
-            email = user.Email
+            email = user.Email,
+            role = user.Role
         });
     }
 }

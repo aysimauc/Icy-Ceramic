@@ -8,6 +8,7 @@ import '../services/product_api_service.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
 import 'home_screen.dart';
+import 'admin_dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -140,16 +141,29 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       // ----------------------------------------------------------
-      // 4. Ana sayfaya geç
+      // 4. Kullanıcı rolüne göre yönlendir
       // ----------------------------------------------------------
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              const HomeScreen(),
-        ),
-      );
+      final role =
+          result['role']?.toString().trim().toLowerCase();
+
+      if (role == 'admin') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                const AdminDashboardScreen(),
+          ),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                const HomeScreen(),
+          ),
+        );
+      }
     } catch (e) {
       if (!mounted) {
         return;
