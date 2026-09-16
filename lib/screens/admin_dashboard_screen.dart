@@ -4,6 +4,8 @@ import '../models/product.dart';
 import '../services/cart_service.dart';
 import '../services/product_api_service.dart';
 import 'admin_stock_screen.dart';
+import 'admin_product_management_screen.dart';
+import 'admin_order_screen.dart';
 import 'home_screen.dart';
 import 'login_screen.dart';
 
@@ -115,6 +117,16 @@ class _AdminDashboardScreenState
         _loadDashboard();
       }
     });
+  }
+
+  void _goToOrderManagement() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            const AdminOrderScreen(),
+      ),
+    );
   }
 
   void _logout() {
@@ -340,6 +352,11 @@ class _AdminDashboardScreenState
                   ),
                 ),
                 const SizedBox(height: 14),
+
+                // ------------------------------------------------
+                // ÜRÜNLER
+                // ------------------------------------------------
+
                 _buildManagementCard(
                   icon: Icons
                       .inventory_2_outlined,
@@ -349,12 +366,26 @@ class _AdminDashboardScreenState
                   value:
                       '${_products.length} ürün',
                   onTap: () {
-                    _showComingSoon(
-                      'Ürün Yönetimi',
-                    );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const AdminProductManagementScreen(),
+                      ),
+                    ).then((_) {
+                      if (mounted) {
+                        _loadDashboard();
+                      }
+                    });
                   },
                 ),
+
                 const SizedBox(height: 12),
+
+                // ------------------------------------------------
+                // STOK YÖNETİMİ
+                // ------------------------------------------------
+
                 _buildManagementCard(
                   icon: Icons
                       .warehouse_outlined,
@@ -366,21 +397,31 @@ class _AdminDashboardScreenState
                   onTap:
                       _goToStockManagement,
                 ),
+
                 const SizedBox(height: 12),
+
+                // ------------------------------------------------
+                // SİPARİŞLER
+                // ------------------------------------------------
+
                 _buildManagementCard(
                   icon: Icons
                       .receipt_long_outlined,
                   title: 'Siparişler',
                   description:
-                      'Müşteri siparişlerinin yönetileceği bölüm.',
-                  value: 'Yakında',
-                  onTap: () {
-                    _showComingSoon(
-                      'Sipariş Yönetimi',
-                    );
-                  },
+                      'Müşteri siparişlerini görüntüleyin ve sipariş durumlarını yönetin.',
+                  value:
+                      'Yönet',
+                  onTap:
+                      _goToOrderManagement,
                 ),
+
                 const SizedBox(height: 12),
+
+                // ------------------------------------------------
+                // KULLANICILAR
+                // ------------------------------------------------
+
                 _buildManagementCard(
                   icon: Icons.people_outline,
                   title: 'Kullanıcılar',
@@ -393,7 +434,9 @@ class _AdminDashboardScreenState
                     );
                   },
                 ),
+
                 const SizedBox(height: 28),
+
                 const Text(
                   'Stok Durumu',
                   style: TextStyle(
@@ -404,11 +447,17 @@ class _AdminDashboardScreenState
                         FontWeight.w400,
                   ),
                 ),
+
                 const SizedBox(height: 14),
+
                 _buildStockStatusCard(),
+
                 const SizedBox(height: 28),
+
                 _buildStoreButton(),
+
                 const SizedBox(height: 12),
+
                 _buildLogoutButton(),
               ],
             ],

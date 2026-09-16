@@ -16,10 +16,6 @@ public class ProductsController : ControllerBase
         _context = context;
     }
 
-    // ============================================================
-    // TÜM ÜRÜNLERİ GETİR
-    // ============================================================
-
     [HttpGet]
     public async Task<IActionResult> GetProducts()
     {
@@ -41,10 +37,6 @@ public class ProductsController : ControllerBase
 
         return Ok(products);
     }
-
-    // ============================================================
-    // TEK ÜRÜNÜ GETİR
-    // ============================================================
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetProduct(int id)
@@ -77,9 +69,64 @@ public class ProductsController : ControllerBase
         return Ok(product);
     }
 
-    // ============================================================
-    // STOK GÜNCELLE
-    // ============================================================
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> UpdateProduct(
+        int id,
+        [FromBody] UpdateProductRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            return BadRequest(new
+            {
+                message = "Ürün adı boş bırakılamaz."
+            });
+        }
+
+        if (request.Price < 0)
+        {
+            return BadRequest(new
+            {
+                message = "Ürün fiyatı 0'dan küçük olamaz."
+            });
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Image))
+        {
+            return BadRequest(new
+            {
+                message = "Ürün görsel yolu boş bırakılamaz."
+            });
+        }
+
+        var product = await _context.Products
+            .FirstOrDefaultAsync(product => product.Id == id);
+
+        if (product == null)
+        {
+            return NotFound(new
+            {
+                message = "Ürün bulunamadı."
+            });
+        }
+
+        product.Name = request.Name.Trim();
+        product.Price = request.Price;
+        product.Description =
+            request.Description?.Trim() ?? string.Empty;
+        product.Image = request.Image.Trim();
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            message = "Ürün bilgileri başarıyla güncellendi.",
+            productId = product.Id,
+            productName = product.Name,
+            price = product.Price,
+            description = product.Description,
+            image = product.Image
+        });
+    }
 
     [HttpPut("{id:int}/stock")]
     public async Task<IActionResult> UpdateStock(
@@ -111,7 +158,6 @@ public class ProductsController : ControllerBase
 
         product.Stock = newStock;
 
-        // Stok değişikliğini hareket tablosuna kaydet.
         if (difference != 0)
         {
             var stockMovement = new StockMovement
@@ -119,7 +165,8 @@ public class ProductsController : ControllerBase
                 ProductId = product.Id,
                 Quantity = difference,
                 MovementType = "ADJUSTMENT",
-                ReferenceNumber = $"STOCK-{product.Id}-{DateTime.UtcNow:yyyyMMddHHmmss}",
+                ReferenceNumber =
+                    $"STOCK-{product.Id}-{DateTime.UtcNow:yyyyMMddHHmmss}",
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -133,16 +180,20 @@ public class ProductsController : ControllerBase
             message = "Stok başarıyla güncellendi.",
             productId = product.Id,
             productName = product.Name,
-            oldStock = oldStock,
-            newStock = newStock,
-            difference = difference
+            oldStock,
+            newStock,
+            difference
         });
     }
 }
 
-// ============================================================
-// STOK GÜNCELLEME İSTEĞİ
-// ============================================================
+public class UpdateProductRequest
+{
+    public string Name { get; set; } = string.Empty;
+    public double Price { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public string Image { get; set; } = string.Empty;
+}
 
 public class UpdateStockRequest
 {

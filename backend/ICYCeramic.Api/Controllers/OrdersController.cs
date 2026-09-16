@@ -80,7 +80,8 @@ public class OrdersController : ControllerBase
             {
                 return BadRequest(new
                 {
-                    message = "Siparişte geçersiz ürün bulunmaktadır."
+                    message =
+                        "Siparişte geçersiz ürün bulunmaktadır."
                 });
             }
 
@@ -92,14 +93,16 @@ public class OrdersController : ControllerBase
                 {
                     return BadRequest(new
                     {
-                        message = "Ürün miktarı geçersiz."
+                        message =
+                            "Ürün miktarı geçersiz."
                     });
                 }
 
                 var product =
                     products[requestItem.ProductId];
 
-                if (product.Stock < requestItem.Quantity)
+                if (product.Stock <
+                    requestItem.Quantity)
                 {
                     return BadRequest(new
                     {
@@ -109,7 +112,8 @@ public class OrdersController : ControllerBase
                 }
 
                 calculatedTotal +=
-                    product.Price * requestItem.Quantity;
+                    product.Price *
+                    requestItem.Quantity;
             }
 
             var orderNumber =
@@ -119,16 +123,21 @@ public class OrdersController : ControllerBase
             {
                 OrderNumber = orderNumber,
                 UserId = request.UserId,
+
                 Total = request.Total > 0
                     ? request.Total
                     : calculatedTotal,
+
                 CreatedAt = DateTime.UtcNow,
+
                 PaymentMethod =
                     string.IsNullOrWhiteSpace(
                         request.PaymentMethod)
                         ? "Kart"
                         : request.PaymentMethod.Trim(),
+
                 Address = request.Address.Trim(),
+
                 Status = "Hazırlanıyor"
             };
 
@@ -158,17 +167,22 @@ public class OrdersController : ControllerBase
                 // STOK DÜŞÜŞÜ
                 // ====================================================
 
-                product.Stock -= requestItem.Quantity;
+                product.Stock -=
+                    requestItem.Quantity;
 
                 var stockMovement =
                     new StockMovement
                     {
                         ProductId = product.Id,
+
                         Quantity =
                             -requestItem.Quantity,
+
                         MovementType = "SALE",
+
                         ReferenceNumber =
                             orderNumber,
+
                         CreatedAt =
                             DateTime.UtcNow
                     };
@@ -183,12 +197,22 @@ public class OrdersController : ControllerBase
 
             return Ok(new
             {
-                message = "Sipariş başarıyla oluşturuldu.",
+                message =
+                    "Sipariş başarıyla oluşturuldu.",
+
                 orderId = order.Id,
-                orderNumber = order.OrderNumber,
-                total = order.Total,
-                status = order.Status,
-                createdAt = order.CreatedAt
+
+                orderNumber =
+                    order.OrderNumber,
+
+                total =
+                    order.Total,
+
+                status =
+                    order.Status,
+
+                createdAt =
+                    order.CreatedAt
             });
         }
         catch
@@ -212,10 +236,16 @@ public class OrdersController : ControllerBase
         int userId)
     {
         var orders = await _context.Orders
-            .Where(order => order.UserId == userId)
+            .Where(order =>
+                order.UserId == userId)
+
             .Include(order => order.Items)
+
             .ThenInclude(item => item.Product)
-            .OrderByDescending(order => order.CreatedAt)
+
+            .OrderByDescending(
+                order => order.CreatedAt)
+
             .Select(order => new
             {
                 order.Id,
@@ -231,15 +261,272 @@ public class OrdersController : ControllerBase
                 items = order.Items.Select(item => new
                 {
                     item.ProductId,
-                    productName = item.Product.Name,
-                    productImage = item.Product.Image,
+
+                    productName =
+                        item.Product.Name,
+
+                    productImage =
+                        item.Product.Image,
+
                     item.Quantity,
+
                     item.UnitPrice,
+
                     item.TotalPrice
                 })
             })
+
             .ToListAsync();
 
         return Ok(orders);
     }
+
+    // ============================================================
+    // GET: api/orders/admin
+    // ============================================================
+    // ADMIN - TÜM SİPARİŞLER
+    // ============================================================
+
+    [HttpGet("admin")]
+    public async Task<IActionResult> GetAllOrders()
+    {
+        var orders = await _context.Orders
+
+            .Include(order => order.Items)
+
+            .ThenInclude(item => item.Product)
+
+            .OrderByDescending(
+                order => order.CreatedAt)
+
+            .Select(order => new
+            {
+                order.Id,
+
+                order.OrderNumber,
+
+                order.UserId,
+
+                order.Total,
+
+                order.CreatedAt,
+
+                order.PaymentMethod,
+
+                order.Address,
+
+                order.Status,
+
+                order.TrackingNumber,
+
+                order.CargoCompany,
+
+                items = order.Items.Select(item => new
+                {
+                    item.ProductId,
+
+                    productName =
+                        item.Product.Name,
+
+                    productImage =
+                        item.Product.Image,
+
+                    item.Quantity,
+
+                    item.UnitPrice,
+
+                    item.TotalPrice
+                })
+            })
+
+            .ToListAsync();
+
+        return Ok(orders);
+    }
+
+    // ============================================================
+    // GET: api/orders/admin/5
+    // ============================================================
+    // ADMIN - TEK SİPARİŞ DETAYI
+    // ============================================================
+
+    [HttpGet("admin/{id:int}")]
+    public async Task<IActionResult> GetAdminOrder(
+        int id)
+    {
+        var order = await _context.Orders
+
+            .Include(order => order.Items)
+
+            .ThenInclude(item => item.Product)
+
+            .Where(order =>
+                order.Id == id)
+
+            .Select(order => new
+            {
+                order.Id,
+
+                order.OrderNumber,
+
+                order.UserId,
+
+                order.Total,
+
+                order.CreatedAt,
+
+                order.PaymentMethod,
+
+                order.Address,
+
+                order.Status,
+
+                order.TrackingNumber,
+
+                order.CargoCompany,
+
+                items = order.Items.Select(item => new
+                {
+                    item.ProductId,
+
+                    productName =
+                        item.Product.Name,
+
+                    productImage =
+                        item.Product.Image,
+
+                    item.Quantity,
+
+                    item.UnitPrice,
+
+                    item.TotalPrice
+                })
+            })
+
+            .FirstOrDefaultAsync();
+
+        if (order == null)
+        {
+            return NotFound(new
+            {
+                message =
+                    "Sipariş bulunamadı."
+            });
+        }
+
+        return Ok(order);
+    }
+
+    // ============================================================
+    // PUT: api/orders/5/status
+    // ============================================================
+    // ADMIN - SİPARİŞ DURUMU GÜNCELLE
+    // ============================================================
+
+    [HttpPut("{id:int}/status")]
+    public async Task<IActionResult> UpdateOrderStatus(
+        int id,
+        [FromBody] UpdateOrderStatusRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Status))
+        {
+            return BadRequest(new
+            {
+                message =
+                    "Sipariş durumu boş olamaz."
+            });
+        }
+
+        var allowedStatuses = new[]
+        {
+            "Hazırlanıyor",
+            "Kargoya Verildi",
+            "Teslim Edildi",
+            "İptal Edildi"
+        };
+
+        var newStatus =
+            request.Status.Trim();
+
+        if (!allowedStatuses.Contains(
+                newStatus))
+        {
+            return BadRequest(new
+            {
+                message =
+                    "Geçersiz sipariş durumu."
+            });
+        }
+
+        var order =
+            await _context.Orders
+                .FirstOrDefaultAsync(
+                    order => order.Id == id);
+
+        if (order == null)
+        {
+            return NotFound(new
+            {
+                message =
+                    "Sipariş bulunamadı."
+            });
+        }
+
+        order.Status = newStatus;
+
+        if (request.CargoCompany != null)
+        {
+            order.CargoCompany =
+                string.IsNullOrWhiteSpace(
+                    request.CargoCompany)
+                    ? null
+                    : request.CargoCompany.Trim();
+        }
+
+        if (request.TrackingNumber != null)
+        {
+            order.TrackingNumber =
+                string.IsNullOrWhiteSpace(
+                    request.TrackingNumber)
+                    ? null
+                    : request.TrackingNumber.Trim();
+        }
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            message =
+                "Sipariş durumu başarıyla güncellendi.",
+
+            orderId =
+                order.Id,
+
+            orderNumber =
+                order.OrderNumber,
+
+            status =
+                order.Status,
+
+            cargoCompany =
+                order.CargoCompany,
+
+            trackingNumber =
+                order.TrackingNumber
+        });
+    }
+}
+
+// ============================================================
+// ADMIN SİPARİŞ DURUMU REQUEST
+// ============================================================
+
+public class UpdateOrderStatusRequest
+{
+    public string Status { get; set; } =
+        string.Empty;
+
+    public string? CargoCompany { get; set; }
+
+    public string? TrackingNumber { get; set; }
 }
