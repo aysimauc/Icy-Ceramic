@@ -6,6 +6,7 @@ import '../services/product_api_service.dart';
 import 'admin_stock_screen.dart';
 import 'admin_product_management_screen.dart';
 import 'admin_order_screen.dart';
+import 'admin_user_screen.dart';
 import 'home_screen.dart';
 import 'login_screen.dart';
 
@@ -427,10 +428,14 @@ class _AdminDashboardScreenState
                   title: 'Kullanıcılar',
                   description:
                       'Müşteri hesapları ve kullanıcı bilgileri.',
-                  value: 'Yakında',
+                  value: 'Yönet',
                   onTap: () {
-                    _showComingSoon(
-                      'Kullanıcı Yönetimi',
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const AdminUserScreen(),
+                      ),
                     );
                   },
                 ),

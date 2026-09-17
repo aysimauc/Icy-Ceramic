@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 class AdminProductService {
   static const String _baseUrl =
-      'http://127.0.0.1:5151/api';
+      'http://10.0.2.2:5151/api';
 
   static Future<void> updateStock({
     required int productId,

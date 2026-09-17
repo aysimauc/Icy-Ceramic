@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 class AdminProductManagementService {
   static const String _baseUrl =
-      'http://127.0.0.1:5151/api';
+      'http://10.0.2.2:5151/api';
 
   static Future<void> updateProduct({
     required int productId,
@@ -14,7 +14,9 @@ class AdminProductManagementService {
     required String image,
   }) async {
     final response = await http.put(
-      Uri.parse('$_baseUrl/products/$productId'),
+      Uri.parse(
+        '$_baseUrl/products/$productId',
+      ),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -33,9 +35,12 @@ class AdminProductManagementService {
 
       try {
         final data =
-            jsonDecode(response.body) as Map<String, dynamic>;
+            jsonDecode(response.body)
+                as Map<String, dynamic>;
+
         if (data['message'] != null) {
-          message = data['message'].toString();
+          message =
+              data['message'].toString();
         }
       } catch (_) {}
 
